@@ -4,20 +4,24 @@ from datetime import datetime
 import numpy as np
 from skimage.io import imread
 from skimage.transform import resize
+
+from domain.Enviroment import CLIENT_DATABASE, DATABASE, COLLECTION, BASEWIDTH, BASEHEIGHT, MIN_HEIGHT, MIN_WIDTH, \
+    NORMALIZE
 from domain.imageObjectJson import imageObjectJson
 
 import pymongo
 import imagesize
 
 #Mudar para variáveis de ambiente na nuvem
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient["delta"]
-mycol = mydb["normalize_list"]
-basewidth = 700
-baseheight = 300
-min_height = 5
-min_width = 5
-normalize = True
+from decouple import config
+myclient = pymongo.MongoClient(CLIENT_DATABASE)
+mydb = myclient[str(DATABASE)]
+mycol = mydb[str(COLLECTION)]
+basewidth = BASEWIDTH
+baseheight = BASEHEIGHT
+min_height = MIN_HEIGHT
+min_width = MIN_WIDTH
+normalize = NORMALIZE
 
 
 def image_array(pixel_values):
@@ -48,11 +52,12 @@ def saveMany(path, images):
     start_time = time.time()
     list_image = []
     for image in images:
-        list_image.append(image_create(path + image).toJson())
+        save(path + image)
+        #list_image.append(image_create(path + image).toJson())
     print("--- %s Processamento: seconds ---" % (time.time() - start_time))
-    start_time = time.time()
-    mycol.insert_many(list_image)
-    print("--- %s Save: seconds ---" % (time.time() - start_time))
+    #start_time = time.time()
+    #mycol.insert_many(list_image)
+    #print("--- %s Save: seconds ---" % (time.time() - start_time))
 
 
 def saveByPath(path):
@@ -63,13 +68,6 @@ def saveByPath(path):
 
 def convertToGray(image):
     return np.dot(image[..., :3], [0.2989, 0.5870, 0.1140])
-
-
-def reshapeImage(image, width, height):
-    i = imread(image)
-    x = resize(i, (height / 6, width / 6))
-    return np.array(convertToGray(x))
-
 
 def reshapeImageInvert(image_path, width, height):
     escala = escalaReducao(width, height)

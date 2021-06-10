@@ -12,7 +12,6 @@ class imageObjectJson:
 
 
     def toJson(self):
-
         return {"nome_arquivo": self.name,
                 "data": self.data,
                 "width": self.width,
