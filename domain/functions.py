@@ -1,54 +1,44 @@
-import glob
-import json
 import os
 from datetime import datetime
 
 import numpy as np
-from PIL import Image
-import cv2
-
-from domain import NumpyArrayEncoder
+from skimage.io import imread
+from skimage.transform import resize
 from domain.imageObjectJson import imageObjectJson
 
 import pymongo
+import imagesize
 
+#Mudar para variáveis de ambiente na nuvem
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["delta"]
-mycol = mydb["normalize"]
+mycol = mydb["normalize_list"]
+basewidth = 700
+baseheight = 300
+min_height = 5
+min_width = 5
+normalize = True
 
 
-def image_array(pixel_values, width, height, channels):
-    image = np.array(pixel_values).reshape((width, height, channels)) / 255
-    return image
+def image_array(pixel_values):
+    if normalize:
+        return pixel_values / 255
+    else:
+        return pixel_values
 
 
 def image_create(image_path):
-    """Get a numpy array of an image so that one can access values[x][y]."""
-    image = Image.open(image_path, "r")
-    width, height = image.size
-    pixel_values = list(image.getdata())
-    if image.mode == "RGB":
-        channels = 3
-    elif image.mode == "RGBA":
-        channels = 4
-    elif image.mode == "L":
-        channels = 1
-    else:
-        print("Unknown mode: %s" % image.mode)
-        return None
+    width, height = imagesize.get(image_path)
+    pixel_values = reshapeImageInvert(image_path, width, height)
     return imageObjectJson(os.path.basename(image_path),
-                           image.mode,
                            datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                           width,
-                           height,
-                           image_array(pixel_values, width, height, channels))
+                           pixel_values[1][0],
+                           pixel_values[1][1],
+                           image_array(pixel_values[0]))
 
 
 def save(image):
-    import time
-    start_time = time.time()
     x = image_create(image).toJson()
-    print("--- %s Processamento: seconds ---" % (time.time() - start_time))
     mycol.insert_one(x)
 
 
@@ -58,14 +48,7 @@ def saveMany(path, images):
     start_time = time.time()
     list_image = []
     for image in images:
-        # save(path+image)
-        x = image_create(path + image).toJson()
-        file = open('out.txt', 'w')
-        file.write(x.__str__())
-        file.close()
-
-        # print(x.__sizeof__())
-        list_image.append(x)
+        list_image.append(image_create(path + image).toJson())
     print("--- %s Processamento: seconds ---" % (time.time() - start_time))
     start_time = time.time()
     mycol.insert_many(list_image)
@@ -76,3 +59,36 @@ def saveByPath(path):
     from os import walk
     _, _, filenames = next(walk(path))
     saveMany(path, filenames)
+
+
+def convertToGray(image):
+    return np.dot(image[..., :3], [0.2989, 0.5870, 0.1140])
+
+
+def reshapeImage(image, width, height):
+    i = imread(image)
+    x = resize(i, (height / 6, width / 6))
+    return np.array(convertToGray(x))
+
+
+def reshapeImageInvert(image_path, width, height):
+    escala = escalaReducao(width, height)
+    return np.array(resize(convertToGray(imread(image_path)), (escala[1], escala[0]))), escala
+
+
+def escalaReducao(width, height):
+    if width > basewidth:
+        size_height = int((float(height) * float((basewidth / float(width)))))
+        if size_height <= min_height or size_height is None:
+            return basewidth, min_height
+        else:
+            return basewidth, size_height
+
+    if height > baseheight:
+        size_width = int((float(width) * float((baseheight / float(height)))))
+        if size_width <= min_width or size_width is None:
+            return min_width, baseheight
+        else:
+            return size_width, baseheight
+    else:
+        return width, height
