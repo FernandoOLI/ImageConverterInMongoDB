@@ -5,15 +5,14 @@ import numpy as np
 from skimage.io import imread
 from skimage.transform import resize
 
-from domain.Enviroment import CLIENT_DATABASE, DATABASE, COLLECTION, BASEWIDTH, BASEHEIGHT, MIN_HEIGHT, MIN_WIDTH, \
+from domain.EnviromentVariables import CLIENT_DATABASE, DATABASE, COLLECTION, BASEWIDTH, BASEHEIGHT, MIN_HEIGHT, MIN_WIDTH, \
     NORMALIZE
 from domain.imageObjectJson import imageObjectJson
 
 import pymongo
 import imagesize
 
-#Mudar para variáveis de ambiente na nuvem
-from decouple import config
+#Variáveis de ambiente
 myclient = pymongo.MongoClient(CLIENT_DATABASE)
 mydb = myclient[str(DATABASE)]
 mycol = mydb[str(COLLECTION)]
