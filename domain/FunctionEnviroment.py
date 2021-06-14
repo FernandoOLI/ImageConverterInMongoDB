@@ -7,7 +7,7 @@ def validateEnviroment(name_env):
         return name
     else:
         raise Exception(
-            '----- The name of enviroment is not define to local or cluster, please verify the .env file -------')
+            '----- The name of enviroment is not defined to local or cluster, please verify the .env file -------')
 
 
 defineEnviroment = validateEnviroment('ENVIROMENT')

@@ -12,5 +12,3 @@ BASEHEIGHT = ValidateValueInt('BASEHEIGHT')
 MIN_HEIGHT = ValidateValueInt('MIN_HEIGHT')
 MIN_WIDTH = ValidateValueInt('MIN_WIDTH')
 NORMALIZE = ValidateValueBool('NORMALIZE')
-
-
