@@ -1,7 +1,10 @@
 import os
+import uuid
 from datetime import datetime
+from io import BytesIO
 
 import numpy as np
+from azure.storage.blob import BlobServiceClient
 from skimage.io import imread
 from skimage.transform import resize
 
@@ -41,9 +44,35 @@ def image_create(image_path):
 
 
 def save(image):
-    x = image_create(image).toJson()
-    mycol.insert_one(x)
+    image_json = image_create(image).toJsonBinary()
+    mycol.insert_one(image_json)
 
+def read():
+    #image_read = mycol.find_one({"data": "16/06/2021 14:51:53"})
+    #print(list(image_read)[1])
+    #image_read = mycol.find_one({"data": "16/06/2021 15:14:59"})
+    #print(list(image_read))
+    connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+    blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+
+    # Create a unique name for the container
+    container_name = "deltaimageconteiner"
+    container_client = blob_service_client.get_container_client(container=container_name)
+    for blob in container_client.list_blobs():
+        print(blob)
+        blob_client = container_client.get_blob_client(blob)
+        print(blob_client.url)
+        save(blob_client.url)
+        #blob_client = container_client.get_blob_client(blob.name)
+        #streamdownloader = blob_client.download_blob()
+        #stream = BytesIO()
+        #streamdownloader.download_to_stream(stream)
+        #Image.open(byte_stream)
+        #blob_service_client.get_blob_to_path(container_name, blob.name)
+
+
+def database_to_object(object_database):
+    print()
 
 def saveMany(path, images):
     print("--- %s saveMany ---")

@@ -1,5 +1,6 @@
 import json
-
+import pickle
+import pymongo
 from domain import NumpyArrayEncoder
 
 class imageObjectJson:
@@ -18,3 +19,9 @@ class imageObjectJson:
                 "height": self.height,
                 "image_normalizada": str(json.dumps(self.array, cls=NumpyArrayEncoder.NumpyArrayEncode))}
 
+    def toJsonBinary(self):
+        return {"nome_arquivo": self.name,
+                "data": self.data,
+                "width": self.width,
+                "height": self.height,
+                "image_normalizada": pickle.dumps(str(json.dumps(self.array, cls=NumpyArrayEncoder.NumpyArrayEncode)), protocol=2)}
