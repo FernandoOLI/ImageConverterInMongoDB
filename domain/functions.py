@@ -8,8 +8,9 @@ from azure.storage.blob import BlobServiceClient
 from skimage.io import imread
 from skimage.transform import resize
 
-from domain.EnviromentVariables import CLIENT_DATABASE, DATABASE, COLLECTION, BASEWIDTH, BASEHEIGHT, MIN_HEIGHT, MIN_WIDTH, \
-    NORMALIZE
+from domain.EnviromentVariables import CLIENT_DATABASE, DATABASE, COLLECTION, BASEWIDTH, BASEHEIGHT, MIN_HEIGHT, \
+    MIN_WIDTH, \
+    NORMALIZE, CONTADOR
 from domain.imageObjectJson import imageObjectJson
 
 import pymongo
@@ -24,6 +25,7 @@ baseheight = BASEHEIGHT
 min_height = MIN_HEIGHT
 min_width = MIN_WIDTH
 normalize = NORMALIZE
+contador = CONTADOR
 
 
 def image_array(pixel_values):
@@ -79,13 +81,19 @@ def saveMany(path, images):
     import time
     start_time = time.time()
     list_image = []
+    contador_limite = 0
     for image in images:
-        save(path + image)
-        #list_image.append(image_create(path + image).toJson())
-    print("--- %s Processamento: seconds ---" % (time.time() - start_time))
-    #start_time = time.time()
-    #mycol.insert_many(list_image)
-    #print("--- %s Save: seconds ---" % (time.time() - start_time))
+        #save(path + image)
+        list_image.append(image_create(path + image).toJson())
+        if contador_limite >= contador:
+            mycol.insert_many(list_image)
+            list_image = []
+            contador_limite = 0
+        else:
+            contador_limite = contador_limite + 1
+    if len(list_image) > 0:
+        mycol.insert_many(list_image)
+    print("---  Save: %s seconds ---" % (time.time() - start_time))
 
 
 def saveByPath(path):
