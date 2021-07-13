@@ -86,8 +86,21 @@ def DefinePathSingle():
     else:
         return None
 
+def DefineAzure():
+    import os
+    if config('AZURE_STORAGE_CONNECTION_STRING') == 'not':
+        return os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+    else:
+        return config('AZURE_STORAGE_CONNECTION_STRING')
 
 def CreateConnection():
     return config('CLIENT_DATABASE_ONLINE').replace('<DATABASE_USER>', config('DATABASE_USER')) \
         .replace('<DATABASE_ONLINE>', config('DATABASE_ONLINE')) \
         .replace('<ACCESS>', config('ONLINE_ACCESS'))
+
+def AzureContainer():
+    return config('AZURE_CONTAINER')
+
+def TempPath():
+    return config('TEMP_PATH')
+
