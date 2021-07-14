@@ -101,6 +101,9 @@ def CreateConnection():
 def AzureContainer():
     return config('AZURE_CONTAINER')
 
+def AzureBackup():
+    return config('AZURE_BACKUP')
+
 def TempPath():
     return config('TEMP_PATH')
 

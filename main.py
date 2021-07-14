@@ -1,6 +1,3 @@
-import pymongo
-
-from domain.EnviromentVariables import PATH_BASE_SINGLE, PATH_BASE
 from domain.functions import save, saveByPath, read, clearTmp
 
 
@@ -11,11 +8,13 @@ def images(path):
     saveByPath(path)
 
 def readImage():
+    print("--- %s saveMany ---")
+    import time
+    start_time = time.time()
     read()
-
+    print("---  Save: %s seconds ---" % (time.time() - start_time))
 
 if __name__ == '__main__':
     #image(PATH_BASE_SINGLE)
     readImage()
-    #clearTmp()
-    #images(PATH_BASE)
+

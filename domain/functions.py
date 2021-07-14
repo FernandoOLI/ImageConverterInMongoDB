@@ -11,6 +11,7 @@ from skimage.transform import resize
 from domain.EnviromentVariables import CLIENT_DATABASE, DATABASE, COLLECTION, BASEWIDTH, BASEHEIGHT, MIN_HEIGHT, \
     MIN_WIDTH, \
     NORMALIZE, CONTADOR, AZURE_CONNECTION, AZURE_CONTAINER, TEMP_PATH
+from domain.azure_function import AzureBlobFileDownloader
 from domain.imageObjectJson import imageObjectJson
 
 import pymongo
@@ -58,55 +59,26 @@ def read():
     container_name = "deltaimageconteiner"
     container_client = blob_service_client.get_container_client(container=container_name)
     contador_download = 0
+    list_blob = []
     for blob in container_client.list_blobs():
-        blob_client = container_client.get_blob_client(blob.name)
-        streamdownloader = blob_client.download_blob()
-        stream = BytesIO()
-        streamdownloader.download_to_stream(stream)
-
+        list_blob.append(blob)
         if contador_download >= contador:
             azure_blob_file_downloader = AzureBlobFileDownloader()
-            azure_blob_file_downloader.download_all_blobs_in_container()
+            azure_blob_file_downloader.download_all_blobs_in_container(list_blob)
             saveTmp(blob_service_client)
             contador_download = 0
+            list_blob = []
         else:
             contador_download = contador_download + 1
 
-    class AzureBlobFileDownloader:
-        def __init__(self):
-            print("Intializing AzureBlobFileDownloader")
-
-            # Initialize the connection to Azure storage account
-            self.blob_service_client = BlobServiceClient.from_connection_string(azure)
-            self.my_container = self.blob_service_client.get_container_client(container)
-
-        def save_blob(self, file_name, file_content):
-            # Get full path to the file
-            download_file_path = os.path.join(tmp_path, file_name)
-
-            # for nested blobs, create local path as well!
-            os.makedirs(os.path.dirname(download_file_path), exist_ok=True)
-
-            with open(download_file_path, "wb") as file:
-                file.write(file_content)
-
-        def download_all_blobs_in_container(self):
-            my_blobs = self.my_container.list_blobs()
-            for blob in my_blobs:
-                print(blob.name)
-                bytes = self.my_container.get_blob_client(blob).download_blob().readall()
-                self.save_blob(blob.name, bytes)
-
-
-    # Initialize class and upload files
+    if len(list_blob) > 0:
+        saveTmp(blob_service_client)
 
 
 
 
 def saveTmp(blob_service):
-    print("--- %s saveMany ---")
-    import time
-    start_time = time.time()
+
     list_image = []
     contador_limite = 0
     from os import walk
@@ -122,11 +94,12 @@ def saveTmp(blob_service):
             clearTmp()
         else:
             contador_limite = contador_limite + 1
+
     if len(list_image) > 0:
         mycol.insert_many(list_image)
-    #clearTmp()
+        clearTmp()
     move_azure_files(images, blob_service)
-    print("---  Save: %s seconds ---" % (time.time() - start_time))
+
 
 def move_azure_files(images, blob_service_client):
 
@@ -144,9 +117,6 @@ def move_azure_files(images, blob_service_client):
         remove_blob.delete_blob()
 
 def saveMany(path, images):
-    print("--- %s saveMany ---")
-    import time
-    start_time = time.time()
     list_image = []
     contador_limite = 0
     for image in images:
@@ -161,9 +131,7 @@ def saveMany(path, images):
             contador_limite = contador_limite + 1
     if len(list_image) > 0:
         mycol.insert_many(list_image)
-    #clearTmp()
 
-    print("---  Save: %s seconds ---" % (time.time() - start_time))
 
 def clearTmp():
     import shutil
