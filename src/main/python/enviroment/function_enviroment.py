@@ -1,16 +1,13 @@
 from decouple import config
 
 
-def validateEnviroment(name_env):
-    name = config(name_env)
+def validateEnviroment():
+    name = config('ENVIROMENT')
     if name == 'local' or name == 'cluster':
         return name
     else:
         raise Exception(
             '----- The name of enviroment is not defined to local or cluster, please verify the .env file -------')
-
-
-defineEnviroment = validateEnviroment('ENVIROMENT')
 
 
 def ValidateValueInt(name):
@@ -41,6 +38,7 @@ def ValidateValueBool(nameEnv):
     except:
         return True
 
+defineEnviroment = validateEnviroment()
 
 def DefineConnection():
     if defineEnviroment == 'local':
@@ -103,6 +101,9 @@ def AzureContainer():
 
 def AzureBackup():
     return config('AZURE_BACKUP')
+
+def AzureName():
+    return config('AZURE_NAME')
 
 def TempPath():
     return config('TEMP_PATH')
