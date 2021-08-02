@@ -10,9 +10,10 @@ def run():
     print("---  Save duration: %s seconds ---" % (time.time() - start_time))
     print("------------------------ End ------------------------")
 
+
 def clear():
     clear_backup()
 
+
 if __name__ == '__main__':
     run()
-
