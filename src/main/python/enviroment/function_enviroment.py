@@ -22,7 +22,8 @@ def default(x):
         'BASEWIDTH': 200,
         'BASEHEIGHT': 100,
         'MIN_HEIGHT': 10,
-        'MIN_WIDTH': 10
+        'MIN_WIDTH': 10,
+        'QUANTIDADE': 10
     }.get(x, 1)
 
 

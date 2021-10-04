@@ -5,13 +5,10 @@ from azure.storage.blob import BlobServiceClient
 from src.main.python.enviroment.enviroment_variables import AZURE_CONNECTION, AZURE_CONTAINER, TEMP_PATH, AZURE_BACKUP, \
     AZURE_NAME
 from src.main.python.image_functions.image_transform import image_create
-from src.main.python.enviroment.enviroment_variables import CLIENT_DATABASE, DATABASE, COLLECTION, BASEWIDTH, BASEHEIGHT, MIN_HEIGHT, \
-    MIN_WIDTH, \
-    NORMALIZE, CONTADOR, AZURE_CONNECTION, AZURE_CONTAINER, TEMP_PATH
-
+from src.main.python.enviroment.enviroment_variables import CLIENT_DATABASE, DATABASE, COLLECTION, CONTADOR, AZURE_CONNECTION, AZURE_CONTAINER, TEMP_PATH
 import pymongo
 
-#Variáveis de ambiente
+# Variáveis de ambiente
 myclient = pymongo.MongoClient(CLIENT_DATABASE)
 mydb = myclient[str(DATABASE)]
 mycol = mydb[str(COLLECTION)]
@@ -32,7 +29,7 @@ class AzureBlobFileDownloader:
     def save_blob(self, file_name, file_content):
         # Get full path to the file
         download_file_path = os.path.join(tmp_path, file_name)
-
+        print(download_file_path)
         # for nested blobs, create local path as well!
         os.makedirs(os.path.dirname(download_file_path), exist_ok=True)
 
@@ -40,8 +37,8 @@ class AzureBlobFileDownloader:
             file.write(file_content)
 
     def download_all_blobs_in_container(self, list_blob):
-        my_blobs = list_blob
-        for blob in my_blobs:
+        print("download_all_blobs_in_container", len(list(list_blob)))
+        for blob in list_blob:
             bytes = self.my_container.get_blob_client(blob).download_blob().readall()
             self.save_blob(blob.name, bytes)
 
@@ -52,7 +49,6 @@ def save(image):
 
 
 def saveTmp(blob_service):
-
     list_image = []
     limit_count = 0
     from os import walk
@@ -76,9 +72,7 @@ def saveTmp(blob_service):
 
 
 def move_azure_files(images, blob_service_client):
-
     for blob_name in images:
-
         source_blob = (f"https://{azure_name}.blob.core.windows.net/{container}/{blob_name}")
 
         copied_blob = blob_service_client.get_blob_client(backup, blob_name)

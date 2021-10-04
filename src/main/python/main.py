@@ -14,6 +14,11 @@ def run():
 def clear():
     clear_backup()
 
+from src.main.python.azure_functions.main import main
+
+def run_zip():
+    print("run_zip")
+    main()
 
 if __name__ == '__main__':
-    run()
+    run_zip()
