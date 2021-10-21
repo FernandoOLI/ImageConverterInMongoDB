@@ -101,17 +101,15 @@ def zip_download(list_url):
         return tempdir
 
     file_path_variable = search_for_file_path()
-
-    with ZipFile('sample.zip', 'w') as zipObj:
+    print(file_path_variable)
+    with ZipFile(file_path_variable+'/sample.zip', 'w') as zipObj:
         # Iterate over all the files in directory
         for folderName, subfolders, filenames in os.walk(tmp_path):
-            print(filenames)
             for filename in filenames:
                 # create complete filepath of file in directory
                 filePath = os.path.join(folderName, filename)
-                print(filePath)
                 # Add file to zip
-                zipObj.write(filePath, basename(file_path_variable))
+                zipObj.write(filePath, filename)
 
 
 def qnt_image(list_url):
